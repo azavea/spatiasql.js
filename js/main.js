@@ -116,57 +116,57 @@ worker.onerror = function (event) {
 
 function findAndDrawGeoJSON (res) {
 
-    if (Array.isArray(res)) {
+    if (!Array.isArray(res)) { return; }
 
     var features = [];
 
     for (var q = 0, qs = res.length; q < qs; q++) {
 
-        var cols = res[q].columns
-        , rows = res[q].values
-        ;
+        var cols = res[q].columns;
+        var rows = res[q].values;
 
-        if (res[q].columns.length == 0)
-        continue;
+        if (res[q].columns.length == 0) { continue; }
 
         for (var c = 0, cs = cols.length; c < cs; c++) {
-        if (cols[c].toLowerCase() === 'geojson') {
-            for (var r = 0, rs = rows.length; r < rs; r++) {
-            try {
-                var geojson = JSON.parse(rows[r][c]);
-                var feature = {
-                type: 'Feature',
-                properties: {},
-                geometry: geojson
-                };
-                rows[r].forEach(function (data, index) {
-                if (index !== c) {
-                    if (typeof data === 'number')
-                    feature.properties[cols[index]] = data.toFixed(2);
-                    else if (typeof data === 'string')
-                    feature.properties[cols[index]] = (data.length > 20 ? data.substr(0, 20) + '..' : data);
+            if (cols[c].toLowerCase() === 'geojson') {
+                for (var r = 0, rs = rows.length; r < rs; r++) {
+                    try {
+                        var geojson = JSON.parse(rows[r][c]);
+                        var feature = {
+                        type: 'Feature',
+                        properties: {},
+                        geometry: geojson
+                        };
+                        rows[r].forEach(function (data, index) {
+                            if (index !== c) {
+                                if (typeof data === 'number') {
+                                    feature.properties[cols[index]] = data.toFixed(2);
+                                } else if (typeof data === 'string') {
+                                    feature.properties[cols[index]] = (data.length > 20 ? data.substr(0, 20) + '..' : data);
+                                }
+                            }
+                        });
+                        // rows[r][c] = geojson; // nicer to render in pre
+                        if (feature.geometry) {
+                            features.push(feature);
+                        }
+                    } catch (e) {
+                        console.log(e);
+                        pre.prepend('Error: ' + e.message + '\n');
+                    }
                 }
-                });
-                rows[r][c] = geojson; // nicer to render in pre
-                if (feature.geometry)
-                features.push(feature);
-            } catch (e) {
-                console.log(e);
-                pre.prepend('Error: ' + e.message + '\n');
-            }
             }
         }
-        }
-
     }
 
     if (features.length > 0) {
-        if (layer)
-        map.removeLayer(layer);
-        layer = L.geoJson(features, {
-        onEachFeature: function onEachFeature(feature, layer) {
-            layer.bindPopup(JSON.stringify(feature.properties, null, 2));
+        if (layer) {
+            map.removeLayer(layer);
         }
+        layer = L.geoJson(features, {
+            onEachFeature: function onEachFeature(feature, layer) {
+                layer.bindPopup(JSON.stringify(feature.properties, null, 2));
+            }
         });
         layer.addTo(map);
         map.fitBounds(layer.getBounds());
@@ -176,8 +176,6 @@ function findAndDrawGeoJSON (res) {
         //     [features[0].geometry.bbox[3], features[0].geometry.bbox[2]]
         //   ]);
         // }
-    }
-
     }
 }
 
