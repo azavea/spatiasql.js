@@ -15,7 +15,7 @@ var editor = CodeMirror.fromTextArea(textarea.get(0), {
     mode: 'text/x-sql',
     keyMap: 'sublime'
 });
-var map = new L.Map('map');
+var map = new L.Map('map', {renderer: L.canvas()});
 map.setView([49.8, 7.8], 9);
 L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
