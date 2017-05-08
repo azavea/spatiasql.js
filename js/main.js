@@ -87,13 +87,16 @@ input.on('change', function () {
 
 worker.onmessage = function (event) {
     if (event.data.id > 1) {
-    time.html(((Date.now() - start) / 1000).toFixed(3) + ' sec');
+    var queryTime = Date.now() - start;
+    console.log("Time to query: " + queryTime + "ms");
+    time.html((queryTime / 1000).toFixed(3) + ' sec');
     findAndDrawGeoJSON(event.data.results);
     pre.prepend('\n');
     pre.prepend((typeof event.data === 'string' ? event.data : (
-        event.data.results ? JSON.stringify(event.data.results, null, 2) : JSON.stringify(event.data, null, 2)
+        event.data.results ? JSON.stringify(event.data.results[0].columns, null, 2) : JSON.stringify(event.data, null, 2)
         )
     ));
+    console.log(event.data);
     runBtn.prop('disabled', false);
     input.prop('disabled', false);
     runBtn.html('run');
@@ -115,6 +118,7 @@ worker.onerror = function (event) {
 };
 
 function findAndDrawGeoJSON (res) {
+    var startDraw = new Date().getTime();
 
     if (!Array.isArray(res)) { return; }
 
@@ -162,6 +166,9 @@ function findAndDrawGeoJSON (res) {
             map.removeLayer(layer);
         }
         layer = L.geoJson(features, {
+            pointToLayer: function pointToLayer(point, latlng) {
+                return L.circleMarker(latlng, {radius: 6});
+            },
             onEachFeature: function onEachFeature(feature, layer) {
                 layer.bindPopup(JSON.stringify(feature.properties, null, 2));
             }
@@ -175,6 +182,8 @@ function findAndDrawGeoJSON (res) {
         //   ]);
         // }
     }
+    var endDraw = new Date().getTime();
+    console.log("Time to render: " + (endDraw - startDraw) + "ms");
 }
 
 });
