@@ -127,34 +127,32 @@ function findAndDrawGeoJSON (res) {
 
         if (res[q].columns.length == 0) { continue; }
 
-        for (var c = 0, cs = cols.length; c < cs; c++) {
-            if (cols[c].toLowerCase() === 'geojson') {
-                for (var r = 0, rs = rows.length; r < rs; r++) {
-                    try {
-                        var geojson = JSON.parse(rows[r][c]);
-                        var feature = {
-                        type: 'Feature',
-                        properties: {},
-                        geometry: geojson
-                        };
-                        rows[r].forEach(function (data, index) {
-                            if (index !== c) {
-                                if (typeof data === 'number') {
-                                    feature.properties[cols[index]] = data.toFixed(2);
-                                } else if (typeof data === 'string') {
-                                    feature.properties[cols[index]] = (data.length > 20 ? data.substr(0, 20) + '..' : data);
-                                }
-                            }
-                        });
-                        // rows[r][c] = geojson; // nicer to render in pre
-                        if (feature.geometry) {
-                            features.push(feature);
+        var c = cols.findIndex(function (col) { return col.toLowerCase() === "geojson"; });
+        if (c === -1) { continue; }
+        for (var r = 0, rs = rows.length; r < rs; r++) {
+            try {
+                var geojson = JSON.parse(rows[r][c]);
+                var feature = {
+                type: 'Feature',
+                properties: {},
+                geometry: geojson
+                };
+                rows[r].forEach(function (data, index) {
+                    if (index !== c) {
+                        if (typeof data === 'number') {
+                            feature.properties[cols[index]] = data.toFixed(2);
+                        } else if (typeof data === 'string') {
+                            feature.properties[cols[index]] = (data.length > 20 ? data.substr(0, 20) + '..' : data);
                         }
-                    } catch (e) {
-                        console.log(e);
-                        pre.prepend('Error: ' + e.message + '\n');
                     }
+                });
+                // rows[r][c] = geojson; // nicer to render in pre
+                if (feature.geometry) {
+                    features.push(feature);
                 }
+            } catch (e) {
+                console.log(e);
+                pre.prepend('Error: ' + e.message + '\n');
             }
         }
     }
