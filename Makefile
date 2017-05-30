@@ -37,10 +37,10 @@ getsrc:
 	tar -xzvf 4.9.1.tar.gz; \
 	rm -rf proj; \
 	mv -f proj.4-4.9.1 proj; \
-	wget -nc http://zlib.net/zlib-1.2.8.tar.gz; \
-	tar -xzvf zlib-1.2.8.tar.gz; \
+	wget -nc http://zlib.net/zlib-1.2.11.tar.gz; \
+	tar -xzvf zlib-1.2.11.tar.gz; \
 	rm -rf zlib; \
-	mv -f zlib-1.2.8 zlib; \
+	mv -f zlib-1.2.11 zlib; \
 	wget -nc https://www.sqlite.org/2015/sqlite-amalgamation-3081101.zip; \
 	unzip sqlite-amalgamation-3081101.zip; \
 	rm -rf sqlite; \
@@ -50,7 +50,7 @@ proj:
 	cd $(PWD)/src/proj; \
 	emconfigure ./configure $(PREFIX) --without-mutex --host=none-none-none; \
 	emmake make install; \
-	rm -f $(PWD)/src/proj/src/cs2cs.o $(PWD)/src/proj/src/geod.o $(PWD)/src/proj/src/nad2bin.o ./src/proj.o; # remove files for executables \ 
+	rm -f $(PWD)/src/proj/src/cs2cs.o $(PWD)/src/proj/src/geod.o $(PWD)/src/proj/src/nad2bin.o ./src/proj.o; # remove files for executables \
 	find $(PWD)/src/proj/src -type f | grep '\.o\b' | EMCC_DEBUG=1 xargs emcc -o $(BCDIR)/proj.bc # join all .o files
 
 geos:
@@ -102,7 +102,7 @@ spatialite:
 	--enable-geosadvanced=yes \
 	--enable-epsg=no \
 	--enable-mathsql=no \
-	--enable-geocallbacks=no \
+	--enable-geocallbacks=yes \
 	--enable-freexl=no \
 	--enable-lwgeom=no \
 	--enable-libxml2=no \
@@ -114,7 +114,7 @@ js/spatiasql.js: js/shell-pre.js js/spatiasql-raw.js js/shell-post.js
 	cat $^ > $@; \
 	rm -f $(PWD)/js/spatiasql-raw.js
 
-js/spatiasql-raw.js: js/api.js exported_functions 
+js/spatiasql-raw.js: js/api.js exported_functions
 	EMDEBUG=1 emcc --memory-init-file 0 -O3 $(EMCC_FLAGS) -s EXPORTED_FUNCTIONS=@exported_functions  \
 	$(BCDIR)/sqlite.bc $(BCDIR)/zlib.bc $(BCDIR)/geos_c.bc $(BCDIR)/geos.bc $(BCDIR)/proj.bc $(BCDIR)/lib/libspatialite.a --post-js js/api.js -o $@
 
